@@ -1,0 +1,64 @@
+
+import datetime
+import time
+import os
+import schedule
+from datetime import datetime
+from selenium import webdriver
+from apscheduler.schedulers.blocking import BlockingScheduler
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.select import Select
+
+account='########' #把#改成学号
+password='##########' #把#改成密码
+userhour,userminute=input("请输入次日定时打卡的时间，以空格分隔,回车确认").split(' ')
+print('您今后的打卡时间为:',userhour,'时',userminute,'分')
+print('请稍后...')
+
+def daka():
+    chrome_options=Options()
+    chrome_options.add_argument('--headless')
+    driver = webdriver.Chrome(options=chrome_options)
+    driver.get(r"https://app.nwafu.edu.cn/ncov/wap/default/index")
+    driver.find_element_by_xpath("//*[@id='app']/div[2]/div[1]/input").send_keys(account)  # 输入账号
+    driver.find_element_by_xpath("//*[@id='app']/div[2]/div[2]/input").send_keys(password)  # 输入密码
+    driver.find_element_by_class_name("btn").click()  # 点击登陆
+    print('正在登陆...')
+
+    time.sleep( 5 )
+    driver.find_element_by_xpath("/html/body/div[1]/div/div/section/div[4]/ul/li[6]/div/input").click()  # 获取地理位置
+    print('正在获取地理位置...')
+
+    time.sleep( 5 )
+    driver.find_element_by_xpath("/html/body/div[1]/div/div/section/div[5]/div/a").click() # 提交信息
+    print('正在提交信息...')
+
+    driver.find_element_by_xpath("//*[@id='wapcf']/div/div[2]/div[2]").click() # 确认信息
+    time.sleep( 3 )
+    driver.close()
+    print("打卡完成！按Y重新打卡,关闭窗口即可退出 ")
+
+def repeat():
+    key = input('press key')
+    if key == 'y' or 'Y':
+        daka()
+        repeat()
+    else:
+            os.exit()
+if __name__ == '__main__':
+    schedule = BlockingScheduler()
+    schedule.add_job(daka, 'cron', hour=userhour, minute=userminute)
+    print('Press Ctrl+{0} to exit'.format('Break' if os.name == 'nt' else 'C    '))
+
+daka()
+repeat()
+
+if __name__ == "__main__":
+    nwafudaka()
+    os.system("pause")
+    try:
+        schedule.start()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+
+
